@@ -1,4 +1,6 @@
 import { LitElement, css, html } from 'lit';
+import { ControlledFrameWrapper } from './wrapper.js';
+
 
 export class WebRequestTest extends LitElement {
   controlledframe;
@@ -244,9 +246,16 @@ export class WebRequestTest extends LitElement {
   }
 
   async #onBeforeRequestCancelsNavigation() {
-    this.controlledframe.request.onBeforeRequest.addListener(() => {
-      return { cancel: true };
-    }, { urls: ['https://www.chromium.org/*'] }, ['blocking']);
+    const wrapper = new ControlledFrameWrapper(this.controlledframe);
+    wrapper.addEventListener('beforerequest', (event) => {
+      event.preventDefault();
+    }, {
+      passive: false,
+      filter: { urls: ['https://www.chromium.org/*'] }
+    });
+    // this.controlledframe.request.onBeforeRequest.addListener(() => {
+    //   return { cancel: true };
+    // }, { urls: ['https://www.chromium.org/*'] }, ['blocking']);
     this.#expectNavigationToBeCanceled();
   }
 
